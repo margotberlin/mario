@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 50% 98%;
+    --foreground: 222 47% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 15%;
+
+    --primary: 250 84% 65%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 45 93% 55%;
+    --secondary-foreground: 222 47% 15%;
+
+    --muted: 210 40% 90%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 330 80% 65%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 47% 15%; /* Dark, neo-brutalist border */
+    --input: 214 32% 91%;
+    --ring: 250 84% 65%;
+
+    --radius: 1.5rem;
+
+    --font-display: 'Fredoka', sans-serif;
+    --font-body: 'Nunito', sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+    background-image: radial-gradient(hsl(var(--muted-foreground)/0.2) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-wide;
+  }
+}
+
+@layer utilities {
+  .shadow-playful {
+    box-shadow: 6px 6px 0px 0px hsl(var(--foreground));
+  }
+  
+  .shadow-playful-hover {
+    box-shadow: 2px 2px 0px 0px hsl(var(--foreground));
+    transform: translate(4px, 4px);
+  }
+
+  .shadow-playful-sm {
+    box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
+  }
+}
