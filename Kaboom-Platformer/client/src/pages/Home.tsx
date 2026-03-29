@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { KaboomGame } from "@/components/KaboomGame";
 import { Sparkles, Trophy, Star, Gamepad2 } from "lucide-react";
 import { useHealthPing } from "@/hooks/use-health";
@@ -5,6 +6,15 @@ import { useHealthPing } from "@/hooks/use-health";
 export default function Home() {
   // Simple check just to ensure API hooks format works, safely ignoring errors
   useHealthPing();
+  const [bestScore, setBestScore] = useState("0");
+
+  useEffect(() => {
+    try {
+      setBestScore(localStorage.getItem("platformerHighScore") || "0");
+    } catch {
+      setBestScore("0");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden">
@@ -35,9 +45,7 @@ export default function Home() {
             <Trophy className="text-secondary" fill="currentColor" />
             <div>
               <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Local Best</p>
-              <p className="text-xl font-black font-display leading-none">
-                {typeof window !== 'undefined' ? localStorage.getItem("platformerHighScore") || "0" : "0"}
-              </p>
+              <p className="text-xl font-black font-display leading-none">{bestScore}</p>
             </div>
           </div>
         </header>

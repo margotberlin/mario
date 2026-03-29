@@ -50,19 +50,23 @@ export function KaboomGame() {
 
     // ── Spawn the next terrain chunk ────────────────────────────────
     const spawnNextPiece = () => {
-      const minGap = currentLevel >= 3 ? 110 : 50;
-      const maxGap = currentLevel >= 7 ? 260 : currentLevel >= 4 ? 200 : 130;
+      const previousFloorEnd = lastFloorX;
+      const minGap = currentLevel >= 3 ? 80 : 50;
+      const maxGap = Math.min(360, currentLevel >= 7 ? 340 : currentLevel >= 4 ? 300 : 250);
       const gapSize = k.rand(minGap, maxGap);
       const floorWidth = k.rand(260, 540);
       const x = lastFloorX + gapSize;
       spawnFloor(x, floorWidth);
       lastFloorX = x + floorWidth;
 
-      // Mid-gap platform on level 5+
-      if (currentLevel >= 5 && gapSize > 170) {
+      // If gap is beyond jumpable distance, add a mid-air assist platform.
+      const maxJumpGap = Math.max(170, baseSpeed * 0.45);
+      if (gapSize > maxJumpGap) {
+        const platformWidth = 120;
+        const platformCenterX = previousFloorEnd + gapSize / 2;
         k.add([
-          k.rect(120, 20, { radius: 4 }),
-          k.pos(x - gapSize / 2 - 60, k.height() - 175),
+          k.rect(platformWidth, 20, { radius: 4 }),
+          k.pos(platformCenterX - platformWidth / 2, k.height() - 175),
           k.color(100, 210, 160),
           k.outline(4, k.BLACK),
           k.area(),
@@ -73,23 +77,59 @@ export function KaboomGame() {
 
       // Obstacles and treasures on the new chunk
       const slots = Math.max(1, Math.floor(floorWidth / 140));
+      const obstacleRules =
+        currentLevel <= 4
+          ? {
+              obstacleChance: 0.2,
+              edgeBuffer: 150,
+              minSpacing: 200,
+              disallowAdjacent: true,
+            }
+          : currentLevel <= 6
+            ? {
+                obstacleChance: 0.24,
+                edgeBuffer: 130,
+                minSpacing: 150,
+                disallowAdjacent: true,
+              }
+            : {
+                obstacleChance: 0.28,
+                edgeBuffer: 110,
+                minSpacing: 110,
+                disallowAdjacent: false,
+              };
+      let lastObstacleX: number | null = null;
+      let lastObstacleSlot: number | null = null;
+
       for (let i = 0; i < slots; i++) {
         const itemX = x + (i + 0.5) * (floorWidth / slots);
         const roll = k.rand();
+        const inSafeZone =
+          itemX >= x + obstacleRules.edgeBuffer &&
+          itemX <= x + floorWidth - obstacleRules.edgeBuffer;
+        const spacingOkay =
+          lastObstacleX === null ||
+          Math.abs(itemX - lastObstacleX) >= obstacleRules.minSpacing;
+        const adjacencyOkay =
+          !obstacleRules.disallowAdjacent ||
+          lastObstacleSlot === null ||
+          i - lastObstacleSlot >= 2;
 
-        if (roll < 0.28) {
+        if (roll < obstacleRules.obstacleChance && inSafeZone && spacingOkay && adjacencyOkay) {
           // Red obstacle — floating in air from level 3
           const floatChance = Math.min(0.5, (currentLevel - 2) * 0.1);
           const isFloating = currentLevel >= 3 && k.rand() < floatChance;
           k.add([
             k.rect(40, 40, { radius: 6 }),
             k.pos(itemX, isFloating ? k.height() - 150 : k.height() - 48),
-            k.anchor("bottom"),
+            k.anchor("bot"),
             k.color(244, 67, 54),
             k.outline(4, k.BLACK),
             k.area(),
             "obstacle",
           ]);
+          lastObstacleX = itemX;
+          lastObstacleSlot = i;
         } else if (roll < 0.55) {
           // Gold treasure
           k.add([
